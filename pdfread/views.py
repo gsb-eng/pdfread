@@ -25,7 +25,7 @@ class PDFReader(View):
         if form.is_valid():
             success = "File successfully decrypted!"
         else:
-            failure = "In correct password, please try with correct password"
+            failure = "Please correct the errors!"
         return render(
             request,
             'pdf_reader.tpl',

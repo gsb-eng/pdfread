@@ -1,15 +1,27 @@
 """PDF reader forms"""
 
+import os
+
 from collections import OrderedDict
 from django import forms
+from django.core.exceptions import ValidationError
 
 from PyPDF2 import PdfFileReader
+from PyPDF2.utils import PdfReadError
+
+VALID_EXTS = [".pdf"]
+
+
+def validate_file_extension(value):
+    ext = os.path.splitext(value.name)[1]
+    if not ext.lower() in VALID_EXTS:
+        raise ValidationError(u'Only PDF files are allowed')
 
 
 class PDFReaderForm(forms.Form):
 
     password = forms.CharField(required=False, widget=forms.PasswordInput)
-    pdf_file = forms.FileField()
+    pdf_file = forms.FileField()  # validators=[validate_file_extension])
 
     def __init__(self, *args, **kwargs):
         super(PDFReaderForm, self).__init__(*args, **kwargs)
@@ -27,9 +39,14 @@ class PDFReaderForm(forms.Form):
     def clean_pdf_file(self):
         pdf_file = self.cleaned_data.get("pdf_file")
         if pdf_file:
-            pdf = PdfFileReader(pdf_file)
-            self.cleaned_data["is_encrypted"] = pdf.isEncrypted
-            self.cleaned_data["pdf"] = pdf
+            try:
+                pdf = PdfFileReader(pdf_file)
+                self.cleaned_data["is_encrypted"] = pdf.isEncrypted
+                self.cleaned_data["pdf"] = pdf
+            except PdfReadError:
+                raise forms.ValidationError(
+                   "Only PDF files are allowed!!"
+                )
         else:
             raise forms.ValidationError(
                 "No pdf file uploaded!"

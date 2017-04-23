@@ -40,7 +40,7 @@
           onsubmit="event.preventDefault(); validatePDF();">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Submit"/>
       </form>
     </div>
   </body>
